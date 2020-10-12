@@ -270,21 +270,6 @@ def main_shop():
     total_l.place(x=0, y= 500)
 
     try:
-        c.execute("SELECT medicine_name FROM medicine_table ORDER BY medicine_name")
-        conn.commit()
-        lst =c.fetchall()
-        i=0
-        lst_c=[]
-        tot = len(lst)
-        for r in range(i,tot):
-            lst_c.append(" ".join(str(x) for x in lst[i]))
-            i+=1
-        ddl_M_e = ttk.Combobox(left,width=25 ,font="times 12 bold",state='readonly')
-        ddl_M_e['values'] = lst_c
-        ddl_M_e.place(x=20,y=80)
-        ddl_M_e.set("Choose Medicine")
-
-
         c.execute("SELECT company_name FROM company_table ORDER BY company_name")
         conn.commit()
         lst =c.fetchall()
@@ -296,8 +281,31 @@ def main_shop():
             i+=1
         ddl_C_e = ttk.Combobox(left,width=25 ,font="times 12 bold",state='readonly')
         ddl_C_e['values'] = lst_c
-        ddl_C_e.place(x=20,y=130)
+        ddl_C_e.place(x=20,y=80)
         ddl_C_e.set("Choose Company")
+        com = ddl_C_e.get()
+        def getComForSrc():
+            com = ddl_C_e.get()
+            c.execute("SELECT medicine_name FROM inventory WHERE company_name=? ORDER BY medicine_name",[com])
+            conn.commit()
+            lst =c.fetchall()
+            i=0
+            lst_c=[]
+            tot = len(lst)
+            for r in range(i,tot):
+                lst_c.append(" ".join(str(x) for x in lst[i]))
+                i+=1
+            ddl_M_e['values'] = lst_c
+
+
+        btn_com = Button(left, width=5, font="times 12 bold", text="Go", command= getComForSrc)
+        btn_com.place(x=280,y=80)
+
+
+        ddl_M_e = ttk.Combobox(left,width=25 ,font="times 12 bold",state='readonly')
+
+        ddl_M_e.place(x=20,y=130)
+        ddl_M_e.set("Choose Medicine")
 
     except :
         tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent= sp)
