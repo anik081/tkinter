@@ -60,7 +60,7 @@ def main_shop():
             company_bill ="\t\tFeni Medical Hall\n"
             address_bill ="\t\t677, East Dholaipar Bajar, Dania Road, Dhaka-1362\n"
             phone_bill="\t\t01818591440\n"
-            sample_bill="\t\tInvoive\n"
+            sample_bill="\t\tInvoice\n"
             dt="\t\tDate: "+str(date)
 
             table_header="\n\n========================================\n\tSN.\tProducts\tQty\tAmount\n----------------------------------------\n\t\t"
@@ -169,6 +169,8 @@ def main_shop():
                         stock_l.configure(text="")
                         shelf_l.configure(text="")
                     def clearList(*args):
+                        for r in label_list:
+                            r.destroy()
                         del(products_list[:])
                         del(products_list_company[:])
                         del(products_quantity[:])
@@ -224,7 +226,7 @@ def main_shop():
             add_btn = Button(left, text="Add to Cart", width="10", height =1, bg="darkcyan" ,font="times 12 bold", command= add_to_cart)
             add_btn.place(x=220, y= 480)
 
-            change_l = Label(left, text="Given Anount: ", font="times 18 bold", bg= "white")
+            change_l = Label(left, text="Given Amount: ", font="times 18 bold", bg= "white")
             change_l.place(x= 20, y =530)
             change_e = Entry(left, width= 10, font="times 18 bold", bg="darkcyan")
             change_e.place(x= 200, y =530)
@@ -271,8 +273,14 @@ def main_shop():
         c.execute("SELECT medicine_name FROM medicine_table ORDER BY medicine_name")
         conn.commit()
         lst =c.fetchall()
+        i=0
+        lst_c=[]
+        tot = len(lst)
+        for r in range(i,tot):
+            lst_c.append(" ".join(str(x) for x in lst[i]))
+            i+=1
         ddl_M_e = ttk.Combobox(left,width=25 ,font="times 12 bold",state='readonly')
-        ddl_M_e['values'] = lst
+        ddl_M_e['values'] = lst_c
         ddl_M_e.place(x=20,y=80)
         ddl_M_e.set("Choose Medicine")
 
@@ -280,8 +288,14 @@ def main_shop():
         c.execute("SELECT company_name FROM company_table ORDER BY company_name")
         conn.commit()
         lst =c.fetchall()
+        i=0
+        lst_c=[]
+        tot = len(lst)
+        for r in range(i,tot):
+            lst_c.append(" ".join(str(x) for x in lst[i]))
+            i+=1
         ddl_C_e = ttk.Combobox(left,width=25 ,font="times 12 bold",state='readonly')
-        ddl_C_e['values'] = lst
+        ddl_C_e['values'] = lst_c
         ddl_C_e.place(x=20,y=130)
         ddl_C_e.set("Choose Company")
 

@@ -5,6 +5,7 @@ import sqlite3
 import tkinter.messagebox
 import os
 import sys
+import re
 data_directory ="./Database"
 image_directory="./icons"
 back_directory ="./Background"
@@ -46,7 +47,7 @@ c.execute("""CREATE TABLE if not exists "inventory" (
 conn.commit()
 c.execute("SELECT COUNT(*) from inventory")
 id = c.fetchone()[0]
-c.execute("SELECT medicine_name,company_name FROM inventory WHERE stock <= 10")
+c.execute("SELECT medicine_name,company_name FROM inventory WHERE stock <= 10 ")
 lessThanTen = c.fetchall()
 warnStock =""
 warnStockLen = len(lessThanTen)
@@ -105,7 +106,7 @@ def adminArea():
     footer.grid(row=10,sticky="news")
     Label(apt, text="Feni Medical Hall",font="times  30 bold", fg="black", bg="darkcyan" ).grid(row=0,column=0,columnspan=100)
     address_apt =Label(apt,text="677, East Dholaipar Bajar, Dania Road, Dhaka-1362", bg="darkcyan", font="times 12 bold", fg="black")
-    address_apt.place(x=580, y=57)
+    address_apt.place(x=567, y=57)
 
     Label(apt, text='*'*280).grid(row=1,column=0,columnspan=3)
     Label(apt, text='-'*280).grid(row=2,column=0,columnspan=3)
@@ -144,8 +145,12 @@ def addCompanyName(*args):
     btn_add = Button(comName, text="Add Medicine",width=10, bg="darkcyan", command=lambda: get_item(com_entry))
     btn_add.place(x=280,y=100)
     def get_item(com_entry):
+        try:
 
-        Name = com_entry.get().upper()
+            Name = com_entry.get().upper().format()
+        except KeyError:
+            Name = com_entry.get().upper()
+            tkinter.messagebox.showerror("showerror","Can't use {} brackets",parent=comName)
         if Name == '':
             tkinter.messagebox.showerror("showerror","Please fill the required boxes",parent=comName)
         else:
@@ -189,8 +194,12 @@ def addMedName(*args):
     btn_add = Button(MedName, text="Add Medicine",width=10, bg="darkcyan", command=lambda: get_item(Med_entry))
     btn_add.place(x=280,y=100)
     def get_item(Med_entry):
+        try:
+            Name = Med_entry.get().upper().format()
+        except KeyError:
+            Name == Med_entry.get().upper()
+            tkinter.messagebox.showerror("showerror","Can't use {} brackets",parent=MedName)
 
-        Name = Med_entry.get().upper()
         if Name == '':
             tkinter.messagebox.showerror("showerror","Please fill the required boxes",parent=MedName)
         else:
@@ -225,7 +234,20 @@ def del_company():
     delCom.geometry("%dx%d+%d+%d" % (width_of_window, height_of_window, x, y))
     delCom.title("Delete Company Name")
     delCom.iconbitmap('plus.ico')
+    lst_com=[]
     def clear_all():
+        c.execute("SELECT company_name FROM company_table ORDER BY company_name")
+        conn.commit()
+        lst =c.fetchall()
+        i=0
+        lst_c=[]
+        tot = len(lst)
+        for r in range(i,tot):
+            lst_c.append(" ".join(str(x) for x in lst[i]))
+            i+=1
+        ddl = ttk.Combobox(delCom,width=25 ,font="times 12 bold",state='readonly')
+        ddl['values'] = lst_c
+        ddl.place(x=150,y=50)
         ddl.set("Choose Company")
     title_label = Label(delCom, text="Delete Company Name", font="times 12 bold", fg="red")
     title_label.place(x=160,y=10)
@@ -233,8 +255,14 @@ def del_company():
         c.execute("SELECT company_name FROM company_table ORDER BY company_name")
         conn.commit()
         lst =c.fetchall()
+        i =0
+        lst_c=[]
+        tot = len(lst)
+        for r in range(i,tot):
+            lst_c.append(" ".join(str(x) for x in lst[i]))
+            i+=1
         ddl = ttk.Combobox(delCom,width=25 ,font="times 12 bold",state='readonly')
-        ddl['values'] = lst
+        ddl['values'] = lst_c
         ddl.place(x=150,y=50)
         ddl.set("Choose Company")
     except :
@@ -249,6 +277,8 @@ def del_company():
             conn.commit()
             tkinter.messagebox.showinfo("Information","Successfully Deleted", parent=delCom)
             clear_all()
+            delCom.destroy()
+            del_company()
         except :
             tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent=delCom)
     delCom.mainloop()
@@ -267,13 +297,31 @@ def del_medicine():
     title_label = Label(delMed, text="Delete Medicine Name", font="times 12 bold", fg="red")
     title_label.place(x=160,y=10)
     def clear_all():
+        c.execute("SELECT medicine_name FROM medicine_table ORDER BY medicine_name")
+        conn.commit()
+        lst =c.fetchall()
+        i=0
+        lst_c=[]
+        tot = len(lst)
+        for r in range(i,tot):
+            lst_c.append(" ".join(str(x) for x in lst[i]))
+            i+=1
+        ddl = ttk.Combobox(delMed,width=25 ,font="times 12 bold",state='readonly')
+        ddl['values'] = lst_c
+        ddl.place(x=150,y=50)
         ddl.set("Choose Medicine")
     try:
         c.execute("SELECT medicine_name FROM medicine_table ORDER BY medicine_name")
         conn.commit()
         lst =c.fetchall()
+        i=0
+        lst_c=[]
+        tot = len(lst)
+        for r in range(i,tot):
+            lst_c.append(" ".join(str(x) for x in lst[i]))
+            i+=1
         ddl = ttk.Combobox(delMed,width=25 ,font="times 12 bold",state='readonly')
-        ddl['values'] = lst
+        ddl['values'] = lst_c
         ddl.place(x=150,y=50)
         ddl.set("Choose Medicine")
     except :
@@ -288,6 +336,8 @@ def del_medicine():
             conn.commit()
             tkinter.messagebox.showinfo("Information","Successfully Deleted", parent=delMed)
             clear_all()
+            delMed.destroy()
+            del_medicine()
         except Exception as e:
             tkinter.messagebox.showerror("showerror","Something Went Wrong!",parent=delMed)
     delMed.mainloop()
@@ -376,6 +426,10 @@ def add_to_stock():
                     conn.commit()
                     tkinter.messagebox.showinfo("Information","Successfully Updated", parent=adStock)
                     clear_all()
+                    adStock.destroy()
+                    add_to_stock()
+
+
                 else:
                     insert_sql = """
                     INSERT INTO inventory(
@@ -393,33 +447,47 @@ def add_to_stock():
                     conn.commit()
                     tkinter.messagebox.showinfo("Information","Successfully Added", parent=adStock)
                     clear_all()
+                    adStock.destroy()
+                    add_to_stock()
             except :
                 tkinter.messagebox.showerror("showerror","Ops! Something Went Wrong!!")
 
     header_l = Label( adStock, text= "Feni Medical Hall" , font= "times 25 bold", bg= "darkcyan")
     header_l.place(x= 500, y =10)
     address_l = Label( adStock, text= "677, East Dholaipar Bajar, Dania Road, Dhaka-1362" , font= "times 10 bold", bg= "darkcyan")
-    address_l.place(x= 500, y =50)
+    address_l.place(x= 485, y =50)
     footer_l = Label( adStock, text= "Developed by Anik" , font= "times 10 bold", bg= "black", fg="white")
     footer_l.place(x= 500, y =700)
     try:
         c.execute("SELECT company_name FROM company_table ORDER BY company_name")
         conn.commit()
         lst =c.fetchall()
+        i=0
+        lst_c=[]
+        tot = len(lst)
+        for r in range(i,tot):
+            lst_c.append(" ".join(str(x) for x in lst[i]))
+            i+=1
         ddl_C_l = Label(adStock,text="Company name:", font= "times 12 bold")
         ddl_C_l.place(x=100, y=100)
         ddl_C_e = ttk.Combobox(adStock,width=25 ,font="times 12 bold",state='readonly')
-        ddl_C_e['values'] = lst
+        ddl_C_e['values'] = lst_c
         ddl_C_e.place(x=300,y=100)
         ddl_C_e.set("Choose Company")
 
         c.execute("SELECT medicine_name FROM medicine_table ORDER BY medicine_name")
         conn.commit()
         lst =c.fetchall()
+        i=0
+        lst_c=[]
+        tot = len(lst)
+        for r in range(i,tot):
+            lst_c.append(" ".join(str(x) for x in lst[i]))
+            i+=1
         ddl_M_l = Label(adStock, text ="Medicine Name:",  font="times 12 bold")
         ddl_M_l.place(x=100, y= 150)
         ddl_M_e = ttk.Combobox(adStock,width=25 ,font="times 12 bold",state='readonly')
-        ddl_M_e['values'] = lst
+        ddl_M_e['values'] = lst_c
         ddl_M_e.place(x=300,y=150)
         ddl_M_e.set("Choose Medicine")
     except :
@@ -580,27 +648,39 @@ def updateItem():
     header_l = Label( upStock, text= "Feni Medical Hall" , font= "times 25 bold", bg= "darkcyan")
     header_l.place(x= 500, y =10)
     address_l = Label( upStock, text= "677, East Dholaipar Bajar, Dania Road, Dhaka-1362" , font= "times 10 bold", bg= "darkcyan")
-    address_l.place(x= 500, y =50)
+    address_l.place(x= 485, y =50)
     footer_l = Label( upStock, text= "Developed by Anik" , font= "times 10 bold", bg= "black", fg="white")
     footer_l.place(x= 500, y =700)
     try:
         c.execute("SELECT company_name FROM company_table ORDER BY company_name")
         conn.commit()
         lst =c.fetchall()
+        i=0
+        lst_c=[]
+        tot = len(lst)
+        for r in range(i,tot):
+            lst_c.append(" ".join(str(x) for x in lst[i]))
+            i+=1
         ddl_C_l = Label(upStock,text="Company name:", font= "times 12 bold")
         ddl_C_l.place(x=100, y=100)
         ddl_C_e = ttk.Combobox(upStock,width=25 ,font="times 12 bold",state='readonly')
-        ddl_C_e['values'] = lst
+        ddl_C_e['values'] = lst_c
         ddl_C_e.place(x=300,y=100)
         ddl_C_e.set("Choose Company")
 
         c.execute("SELECT medicine_name FROM medicine_table ORDER BY medicine_name")
         conn.commit()
         lst =c.fetchall()
+        i=0
+        lst_c=[]
+        tot = len(lst)
+        for r in range(i,tot):
+            lst_c.append(" ".join(str(x) for x in lst[i]))
+            i+=1
         ddl_M_l = Label(upStock, text ="Medicine Name:",  font="times 12 bold")
         ddl_M_l.place(x=100, y= 150)
         ddl_M_e = ttk.Combobox(upStock,width=25 ,font="times 12 bold",state='readonly')
-        ddl_M_e['values'] = lst
+        ddl_M_e['values'] = lst_c
         ddl_M_e.place(x=300,y=150)
         ddl_M_e.set("Choose Medicine")
     except :
@@ -669,10 +749,20 @@ def delete_stock():
             DELETE FROM inventory
             WHERE medicine_name =? AND company_name =?
             """
-            c.execute(sql,[M,C])
+            sqlCheck ="""
+            SELECT COUNT(medicine_name) FROM inventory
+            WHERE company_name =? AND medicine_name =?
+            """
+            c.execute(sqlCheck,[C,M])
+            count = c.fetchone()[0]
             conn.commit()
-            tkinter.messagebox.showinfo("showinfo","Successfully deleted!", parent= delStock)
-            clear_all()
+            if count > 0:
+                c.execute(sql,[M,C])
+                conn.commit()
+                tkinter.messagebox.showinfo("showinfo","Successfully deleted!", parent= delStock)
+                clear_all()
+            else:
+                tkinter.messagebox.showinfo("showinfo","0 in stock!", parent= delStock)
         except :
             tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent= delStock)
 
@@ -680,15 +770,27 @@ def delete_stock():
         c.execute("SELECT company_name FROM company_table ORDER BY company_name")
         conn.commit()
         lst =c.fetchall()
+        i=0
+        lst_c=[]
+        tot = len(lst)
+        for r in range(i,tot):
+            lst_c.append(" ".join(str(x) for x in lst[i]))
+            i+=1
         ddl_C_e = ttk.Combobox(delStock,width=25 ,font="times 12 bold",state='readonly')
-        ddl_C_e['values'] = lst
+        ddl_C_e['values'] = lst_c
         ddl_C_e.place(x=100,y=50)
         ddl_C_e.set("Choose Company")
         c.execute("SELECT medicine_name FROM medicine_table ORDER BY medicine_name")
         conn.commit()
         lst =c.fetchall()
+        i=0
+        lst_c=[]
+        tot = len(lst)
+        for r in range(i,tot):
+            lst_c.append(" ".join(str(x) for x in lst[i]))
+            i+=1
         ddl_M_e = ttk.Combobox(delStock,width=25 ,font="times 12 bold",state='readonly')
-        ddl_M_e['values'] = lst
+        ddl_M_e['values'] = lst_c
         ddl_M_e.place(x=100,y=100)
         ddl_M_e.set("Choose Medicine")
     except :
