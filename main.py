@@ -38,12 +38,14 @@ c.execute("""CREATE TABLE if not exists "medicine_table" (
 );
 """)
 conn.commit()
+
 c.execute("""CREATE TABLE if not exists "transactions" (
 	"id"	INTEGER,
 	"medicine_name"	TEXT,
     "company_name" TEXT,
     "quantity" Text,
-    "amount" TEXT,
+    "amount" FLOAT,
+    "amount_cost" FLOAT,
     "date" TEXT,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
@@ -52,6 +54,7 @@ conn.commit()
 products_list = []
 products_list_company =[]
 products_price = []
+products_cost_price =[]
 products_quantity =[]
 label_list=[]
 def main_shop(userName):
@@ -109,36 +112,36 @@ def main_shop(userName):
             f.close()
 
 
-            try:
 
-                x=0
-                for i in products_list:
-                    ol_s = "SELECT medicine_name,company_name,stock FROM inventory WHERE medicine_name=?  AND company_name=?"
-                    result_s = c.execute(ol_s,[products_list[x],products_list_company[x]])
-                    conn.commit()
-                    for r in result_s:
-                        stock = r[2]
-                    new_stock = int(stock) - int(products_quantity[x])
-                    sql ="UPDATE inventory SET stock =? WHERE medicine_name=? AND company_name =?"
-                    c.execute(sql,[new_stock,products_list[x],products_list_company[x]])
-                    conn.commit()
 
-                    sql2 ="INSERT INTO transactions (medicine_name, company_name,quantity,amount,date) VALUES (?,?,?,?,?)"
-                    c.execute(sql2,[products_list[x],products_list_company[x],products_price[x],products_quantity[x],date])
-                    conn.commit()
-                    x=x+1
-                for r in label_list:
-                    r.destroy()
-                del(products_list[:])
-                del(products_list_company[:])
-                del(products_quantity[:])
-                del(products_price[:])
-                total_l.configure(text="Total: ")
-                change_e.delete(0,END)
-                c_amount.configure(text="")
-                tkinter.messagebox.showinfo("Information","Transactions Done!", parent=sp)
-            except :
-                tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent=sp)
+            x=0
+            for i in products_list:
+                ol_s = "SELECT medicine_name,company_name,stock FROM inventory WHERE medicine_name=?  AND company_name=?"
+                result_s = c.execute(ol_s,[products_list[x],products_list_company[x]])
+                conn.commit()
+                for r in result_s:
+                    stock = r[2]
+                new_stock = int(stock) - int(products_quantity[x])
+                sql ="UPDATE inventory SET stock =? WHERE medicine_name=? AND company_name =?"
+                c.execute(sql,[new_stock,products_list[x],products_list_company[x]])
+                conn.commit()
+
+                sql2 ="INSERT INTO transactions (medicine_name, company_name,quantity,amount,amount_cost,date) VALUES (?,?,?,?,?,?)"
+                c.execute(sql2,[products_list[x],products_list_company[x],products_quantity[x],products_price[x],products_cost_price[x],date])
+                conn.commit()
+                x=x+1
+            for r in label_list:
+                r.destroy()
+            del(products_list[:])
+            del(products_list_company[:])
+            del(products_quantity[:])
+            del(products_price[:])
+            del(products_cost_price[:])
+            total_l.configure(text="Total: ")
+            change_e.delete(0,END)
+            c_amount.configure(text="")
+            tkinter.messagebox.showinfo("Information","Transactions Done!", parent=sp)
+
         def change_func():
             try:
                 amount_given = float(change_e.get())
@@ -162,8 +165,10 @@ def main_shop(userName):
                     tkinter.messagebox.showinfo("Information","Not enough medicine in inventory", parent=sp)
                 else:
                     final_price = float(quantity_e.get()) * float(price) -float(discount_e.get())
+                    final_cost_price = float(quantity_e.get()) * float(price_cost)
                     products_list.append(med)
                     products_price.append(final_price)
+                    products_cost_price.append(float(final_cost_price))
                     products_quantity.append(quantity_e.get())
                     products_list_company.append(com)
 
@@ -204,6 +209,7 @@ def main_shop(userName):
                         del(products_list_company[:])
                         del(products_quantity[:])
                         del(products_price[:])
+                        del(products_cost_price[:])
                         tempName.configure(text="")
                         tempQt.configure(text="")
                         tempPrice.configure(text="")
@@ -215,7 +221,7 @@ def main_shop(userName):
 
 
             except :
-                tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent=sp)
+                tkinter.messagebox.showerror("showerror","Ops! Something went wrong!11", parent=sp)
 
 
         query_check  = "SELECT COUNT(*) FROM inventory WHERE medicine_name=?  AND company_name=?"
@@ -223,15 +229,16 @@ def main_shop(userName):
         conn.commit()
         count = c.fetchone()[0]
         if count > 0:
-            query = "SELECT medicine_name,company_name,sell_per_unit,stock,shelf FROM inventory WHERE medicine_name=?  AND company_name=?"
+            query = "SELECT medicine_name,company_name,sell_per_unit,cost_per_unit,stock,shelf FROM inventory WHERE medicine_name=?  AND company_name=?"
             result = c.execute(query,[ddl,ddl_c])
             conn.commit()
             for r in result:
                 med = r[0]
                 com=r[1]
                 price=r[2]
-                stock = r[3]
-                shelf = r[4]
+                price_cost =r[3]
+                stock = r[4]
+                shelf = r[5]
             medicine_l.configure(text="Medicine Name: "+str(med))
             company_l.configure(text="Company Name: "+str(com))
             price_l.configure(text="Price: "+str(price))
@@ -354,6 +361,10 @@ def main_shop(userName):
     userLabel.place(x=17,y=50)
     adminAreaBtn = Button(left, text="Admin Area", font="times 12 bold", bg="darkcyan", fg="black", command=goToAdminArea)
     adminAreaBtn.place(x=17,y=0)
+
+
+
+
     sp.bind("<Return>", ajax)
 
     sp.mainloop()

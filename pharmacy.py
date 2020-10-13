@@ -66,6 +66,16 @@ c.execute("""CREATE TABLE if not exists "medicine_table" (
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
 """)
+
+conn.commit()
+c.execute("""CREATE TABLE if not exists "revenue" (
+	"id"	INTEGER,
+	"cost_per_transaction"	FLOAT,
+    "sell_per_transaction"	FLOAT,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
+""")
+
 conn.commit()
 c.execute("""CREATE TABLE if not exists "transactions" (
 	"id"	INTEGER,
@@ -124,11 +134,62 @@ def adminArea(userName):
     Button(apt,text='Edit Medicine Info',font="times 12 bold",bg="darkcyan",fg ="black", width=25, command= updateItem).grid(row=8,column=0)
     Button(apt,text='Delete Medicine from Stock',font="times 12 bold",bg="darkcyan",fg ="red", width=25, command=delete_stock).grid(row=9,column=0)
     Label(apt, text="Developed By Md. Mydul Islam Anik.. (01521332139)", font="times 18", bg="black", fg="darkcyan").grid(row=10,column=0)
+    revenueLabel = Button(apt, text="Total Revenue", font="times 12 bold", bg="darkcyan", fg="black", command=revenue)
+    revenueLabel.place(x= 100, y= 350)
     backImage = PhotoImage(file='home.png')
     background_label = Label(apt, image=backImage)
     background_label.place(x=1000, y= 250)
 
     apt.mainloop()
+def revenue():
+    rev = Tk()
+    width_of_window=496
+    height_of_window = 205
+    screen_width =rev.winfo_screenwidth()
+    screen_height = rev.winfo_screenheight()
+    x = (screen_width/2) - (width_of_window/2)
+    y = (screen_height/2) - (height_of_window/2)
+    rev.geometry("%dx%d+%d+%d" % (width_of_window, height_of_window, x, y))
+    rev.title("Revenue")
+    rev.iconbitmap('plus.ico')
+    costLabel = Label(rev, text="Total cost: ", fg="black", font ="times 12 bold")
+    costLabel.place(x= 150, y= 50)
+    costLabelamount = Label(rev, text="", fg="black", font ="times 12 bold")
+    costLabelamount.place(x= 300, y= 50)
+    sellLabel = Label(rev, text="Total Sell: ", fg="black", font ="times 12 bold")
+    sellLabel.place(x= 150, y=100)
+    sellLabelamount = Label(rev, text="", fg="black", font ="times 12 bold")
+    sellLabelamount.place(x= 300, y= 100)
+
+    revLabel = Label(rev, text="Total Revenue: ", fg="black", font ="times 12 bold")
+    revLabel.place(x= 150, y= 150)
+    revLabelamount = Label(rev, text="", fg="black", font ="times 12 bold")
+    revLabelamount.place(x= 300, y= 150)
+    sqlCost ="""
+    SELECT SUM(amount_cost) FROM transactions
+    """
+    c.execute(sqlCost)
+    cost = c.fetchone()[0]
+    conn.commit()
+    costLabelamount.configure(text=str(cost))
+    sqlSell ="""
+    SELECT SUM(amount) FROM transactions
+    """
+    c.execute(sqlSell)
+    sell = c.fetchone()[0]
+    conn.commit()
+    sellLabelamount.configure(text=str(sell))
+    revLabelamount.configure(text=str(float(sell)-float(cost)))
+
+
+
+
+    rev.mainloop()
+
+
+
+
+
 def addCompanyName(*args):
     comName = Tk()
     width_of_window=496
@@ -152,7 +213,6 @@ def addCompanyName(*args):
 
             Name = com_entry.get().upper().format()
         except KeyError:
-            Name = com_entry.get().upper()
             tkinter.messagebox.showerror("showerror","Can't use {} brackets",parent=comName)
         if Name == '':
             tkinter.messagebox.showerror("showerror","Please fill the required boxes",parent=comName)
@@ -201,7 +261,6 @@ def addMedName(*args):
         try:
             Name = Med_entry.get().upper().format()
         except KeyError:
-            Name == Med_entry.get().upper()
             tkinter.messagebox.showerror("showerror","Can't use {} brackets",parent=MedName)
 
         if Name == '':
