@@ -10,6 +10,7 @@ import math
 import random
 import win32api
 
+
 date = datetime.datetime.now().date()
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -23,12 +24,37 @@ def resource_path(relative_path):
 
 conn = sqlite3.connect("./Database/med_store.db")
 c = conn.cursor()
+c.execute("""CREATE TABLE if not exists "company_table" (
+	"id"	INTEGER,
+	"company_name"	TEXT,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
+""")
+conn.commit()
+c.execute("""CREATE TABLE if not exists "medicine_table" (
+	"id"	INTEGER,
+	"medicine_name"	TEXT,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
+""")
+conn.commit()
+c.execute("""CREATE TABLE if not exists "transactions" (
+	"id"	INTEGER,
+	"medicine_name"	TEXT,
+    "company_name" TEXT,
+    "quantity" Text,
+    "amount" TEXT,
+    "date" TEXT,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
+""")
+conn.commit()
 products_list = []
 products_list_company =[]
 products_price = []
 products_quantity =[]
 label_list=[]
-def main_shop():
+def main_shop(userName):
     sp = Tk()
     width_of_window=1300
     height_of_window = 600
@@ -57,25 +83,28 @@ def main_shop():
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
-            company_bill ="\t\tFeni Medical Hall\n"
-            address_bill ="\t\t677, East Dholaipar Bajar, Dania Road, Dhaka-1362\n"
-            phone_bill="\t\t01818591440\n"
-            sample_bill="\t\tInvoice\n"
-            dt="\t\tDate: "+str(date)
+            company_bill ="Feni Medical Hall\n"
+            address_bill ="677, East Dholaipar Bajar,\nDania Road, Dhaka-1362\n"
+            phone_bill="01818591440\n"
+            sample_bill="Invoice\n"
+            dt="Date: "+str(date)
+            openHours ="\nOpen 24 hours\n"
+            soldMed = "Sold medicine is not refundable!\n"
+            user = "receipt creator: "+userName+"\n"
 
-            table_header="\n\n========================================\n\tSN.\tProducts\tQty\tAmount\n----------------------------------------\n\t\t"
-            final = company_bill+address_bill+phone_bill+sample_bill+dt+"\n"+table_header
+            table_header="\n=====================\nSN.  Name  Qty Tk\n---------------------\n"
+            final = company_bill+address_bill+phone_bill+sample_bill+dt+openHours+soldMed+user+"\n"+table_header
             fileName = str(directory)+str(random.randrange(5000,100000))+".doc"
             f = open(fileName, "w")
             f.write(final)
             r = 1
             i=0
             for t in products_list:
-                f.write("\n\t"+str(r)+"\t"+str(products_list[i]+"..............")[:7]+"\t"+str(products_quantity[i])+"\t"+str("{:.2f}".format(products_price[i])))
+                f.write("\n"+str(r)+"  "+str(products_list[i]+"..............")[:7]+"  "+str(products_quantity[i])+"  "+str("{:.2f}".format(products_price[i])))
                 r=r+1
                 i=i+1
             f.write("\n\n\tTotal: Tk. "+str(sum(products_price)))
-            f.write("\n\n\t\t\tThank you")
+            f.write("\n\n\tThank you")
             # os.startfile(fileName,"print")
             f.close()
 
@@ -269,8 +298,24 @@ def main_shop():
     total_l = Label(right, text="Total", font="times 18 bold", bg= "darkcyan" , fg ="white")
     total_l.place(x=0, y= 500)
 
-    try:
-        c.execute("SELECT company_name FROM company_table ORDER BY company_name")
+
+    c.execute("SELECT company_name FROM company_table ORDER BY company_name")
+    conn.commit()
+    lst =c.fetchall()
+    i=0
+    lst_c=[]
+    tot = len(lst)
+    for r in range(i,tot):
+        lst_c.append(" ".join(str(x) for x in lst[i]))
+        i+=1
+    ddl_C_e = ttk.Combobox(left,width=25 ,font="times 12 bold",state='readonly')
+    ddl_C_e['values'] = lst_c
+    ddl_C_e.place(x=20,y=80)
+    ddl_C_e.set("Choose Company")
+    com = ddl_C_e.get()
+    def getComForSrc():
+        com = ddl_C_e.get()
+        c.execute("SELECT medicine_name FROM inventory WHERE company_name=? ORDER BY medicine_name",[com])
         conn.commit()
         lst =c.fetchall()
         i=0
@@ -279,36 +324,19 @@ def main_shop():
         for r in range(i,tot):
             lst_c.append(" ".join(str(x) for x in lst[i]))
             i+=1
-        ddl_C_e = ttk.Combobox(left,width=25 ,font="times 12 bold",state='readonly')
-        ddl_C_e['values'] = lst_c
-        ddl_C_e.place(x=20,y=80)
-        ddl_C_e.set("Choose Company")
-        com = ddl_C_e.get()
-        def getComForSrc():
-            com = ddl_C_e.get()
-            c.execute("SELECT medicine_name FROM inventory WHERE company_name=? ORDER BY medicine_name",[com])
-            conn.commit()
-            lst =c.fetchall()
-            i=0
-            lst_c=[]
-            tot = len(lst)
-            for r in range(i,tot):
-                lst_c.append(" ".join(str(x) for x in lst[i]))
-                i+=1
-            ddl_M_e['values'] = lst_c
+        ddl_M_e['values'] = lst_c
 
 
-        btn_com = Button(left, width=5, font="times 12 bold", text="Go", command= getComForSrc)
-        btn_com.place(x=280,y=80)
+    btn_com = Button(left, width=5, font="times 12 bold", text="Go", command= getComForSrc)
+    btn_com.place(x=280,y=80)
 
 
-        ddl_M_e = ttk.Combobox(left,width=25 ,font="times 12 bold",state='readonly')
+    ddl_M_e = ttk.Combobox(left,width=25 ,font="times 12 bold",state='readonly')
 
-        ddl_M_e.place(x=20,y=130)
-        ddl_M_e.set("Choose Medicine")
+    ddl_M_e.place(x=20,y=130)
+    ddl_M_e.set("Choose Medicine")
 
-    except :
-        tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent= sp)
+
 
     search_btn = Button(left, text="search", width="10", height =1, bg="darkcyan" ,font="times 12 bold", command=ajax)
     search_btn.place(x=250, y= 130)
@@ -322,12 +350,14 @@ def main_shop():
     stock_l.place(x=0, y= 270)
     shelf_l = Label(left, text="", font="times 18 bold", bg="white", fg="darkcyan")
     shelf_l.place(x=0, y= 300)
+    userLabel = Label(left, text="User: "+userName, font="times 12 bold", bg="orange", fg="black")
+    userLabel.place(x=17,y=50)
+    adminAreaBtn = Button(left, text="Admin Area", font="times 12 bold", bg="darkcyan", fg="black", command=goToAdminArea)
+    adminAreaBtn.place(x=17,y=0)
     sp.bind("<Return>", ajax)
 
-
-
-
-
-
-
     sp.mainloop()
+
+def goToAdminArea():
+    import loginAdmin
+    loginAdmin.userLogin()

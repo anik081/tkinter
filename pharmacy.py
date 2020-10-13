@@ -78,7 +78,7 @@ c.execute("""CREATE TABLE if not exists "transactions" (
 );
 """)
 conn.commit()
-def adminArea():
+def adminArea(userName):
     apt=Tk()
     apt.title("Admin Interface")
     width_of_window=1496
@@ -110,6 +110,10 @@ def adminArea():
 
     Label(apt, text='*'*280).grid(row=1,column=0,columnspan=3)
     Label(apt, text='-'*280).grid(row=2,column=0,columnspan=3)
+    userLabel = Label(apt, text="User: ", font="times 12 bold")
+    userLabel.place(x= 50, y= 100)
+    userLabel1 = Label(apt, text=userName, font="times 12 bold")
+    userLabel1.place(x= 100, y= 100)
 
     Label(apt, text="Stock Maintainance", font="times 18").grid(row=2,column=0)
     Button(apt,text='Add Company Name',font="times 12 bold",bg="darkcyan",fg ="black", width=25, command=addCompanyName).grid(row=3,column=0, columnspan=2)
@@ -120,12 +124,10 @@ def adminArea():
     Button(apt,text='Edit Medicine Info',font="times 12 bold",bg="darkcyan",fg ="black", width=25, command= updateItem).grid(row=8,column=0)
     Button(apt,text='Delete Medicine from Stock',font="times 12 bold",bg="darkcyan",fg ="red", width=25, command=delete_stock).grid(row=9,column=0)
     Label(apt, text="Developed By Md. Mydul Islam Anik.. (01521332139)", font="times 18", bg="black", fg="darkcyan").grid(row=10,column=0)
-
-    goShop = Button(apt, text="Selling Page", font = "times 16 bold", bg= "darkcyan", fg = "black", width = 30, command =goToShop)
-    goShop.place(x= 100, y =350)
     backImage = PhotoImage(file='home.png')
     background_label = Label(apt, image=backImage)
     background_label.place(x=1000, y= 250)
+
     apt.mainloop()
 def addCompanyName(*args):
     comName = Tk()
@@ -142,6 +144,7 @@ def addCompanyName(*args):
     title_label.place(x=160,y=10)
     com_entry = Entry(comName,width=15, font="times 20")
     com_entry.place(x=150,y=50)
+    com_entry.focus()
     btn_add = Button(comName, text="Add Medicine",width=10, bg="darkcyan", command=lambda: get_item(com_entry))
     btn_add.place(x=280,y=100)
     def get_item(com_entry):
@@ -172,7 +175,8 @@ def addCompanyName(*args):
                   tkinter.messagebox.showinfo("Information","Successfully Added", parent=comName)
 
             except:
-                tkinter.messagebox.showerror("showerror", "Oops! Something went wrong", parent=comName)
+                tkinter.messagebox.showerror("showerror", "Oops! Something went wrong1", parent=comName)
+    comName.bind("<Return>", lambda *args, com_entry= com_entry: get_item(com_entry))
     comName.mainloop()
 
 
@@ -220,7 +224,8 @@ def addMedName(*args):
                   Med_entry.delete(0,END)
                   tkinter.messagebox.showinfo("Information","Successfully Added", parent=MedName)
             except:
-                tkinter.messagebox.showerror("showerror", "Oops! Something went wrong", parent=MedName)
+                tkinter.messagebox.showerror("showerror", "Oops! Something went wrong2", parent=MedName)
+    MedName.bind("<Return>", lambda *args, Med_entry= Med_entry: get_item(Med_entry))
     MedName.mainloop()
 
 def del_company():
@@ -266,7 +271,7 @@ def del_company():
         ddl.place(x=150,y=50)
         ddl.set("Choose Company")
     except :
-        tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent=delCom)
+        tkinter.messagebox.showerror("showerror","Ops! Something went wrong3!", parent=delCom)
     btn_del = Button(delCom, text="Delete Company",width=15, bg="darkcyan", command=lambda :del_item(ddl))
     btn_del.place(x=280,y=100)
     def del_item(ddl):
@@ -280,7 +285,8 @@ def del_company():
             delCom.destroy()
             del_company()
         except :
-            tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent=delCom)
+            tkinter.messagebox.showerror("showerror","Ops! Something went wrong4!", parent=delCom)
+    delCom.bind("<Return>", lambda *args, ddl= ddl: del_item(ddl))
     delCom.mainloop()
 
 def del_medicine():
@@ -325,7 +331,7 @@ def del_medicine():
         ddl.place(x=150,y=50)
         ddl.set("Choose Medicine")
     except :
-        tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent=delMed)
+        tkinter.messagebox.showerror("showerror","Ops! Something went wrong5!", parent=delMed)
     btn_del = Button(delMed, text="Delete Medicine",width=15, bg="darkcyan", command=lambda :del_item(ddl))
     btn_del.place(x=280,y=100)
     def del_item(ddl):
@@ -339,7 +345,8 @@ def del_medicine():
             delMed.destroy()
             del_medicine()
         except Exception as e:
-            tkinter.messagebox.showerror("showerror","Something Went Wrong!",parent=delMed)
+            tkinter.messagebox.showerror("showerror","Something Went Wrong6!",parent=delMed)
+    delMed.bind("<Return>", lambda *args, ddl= ddl: del_item(ddl))
     delMed.mainloop()
 
 
@@ -374,7 +381,7 @@ def add_to_stock():
         vendor_e.delete(0,END)
         vendorC_e.delete(0,END)
         shelf_e.delete(0,END)
-    def get_items():
+    def get_items(*args):
         ddl_C = ddl_C_e.get()
         ddl_M = ddl_M_e.get()
         stock= stock_E.get()
@@ -426,8 +433,6 @@ def add_to_stock():
                     conn.commit()
                     tkinter.messagebox.showinfo("Information","Successfully Updated", parent=adStock)
                     clear_all()
-                    adStock.destroy()
-                    add_to_stock()
 
 
                 else:
@@ -450,7 +455,7 @@ def add_to_stock():
                     adStock.destroy()
                     add_to_stock()
             except :
-                tkinter.messagebox.showerror("showerror","Ops! Something Went Wrong!!")
+                tkinter.messagebox.showerror("showerror","Ops! Something Went Wrong88!!")
 
     header_l = Label( adStock, text= "Feni Medical Hall" , font= "times 25 bold", bg= "darkcyan")
     header_l.place(x= 500, y =10)
@@ -491,7 +496,7 @@ def add_to_stock():
         ddl_M_e.place(x=300,y=150)
         ddl_M_e.set("Choose Medicine")
     except :
-        tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent= adStock)
+        tkinter.messagebox.showerror("showerror","Ops! Something went wrong!7", parent= adStock)
 
     stock_l = Label(adStock, text ="Stock:", font ="times 12 bold")
     stock_l.place(x=100,y=200)
@@ -532,6 +537,7 @@ def add_to_stock():
     tbox.place(x= 700, y = 100)
     tbox.insert(END, str(id)+" types of medicines added so far\n\n These products(total "+str(warnStockLen)+ ") has less than ten in stock :\n"+ warnStock)
     tbox.config(state=DISABLED)
+    adStock.bind("<Return>",get_items)
     adStock.mainloop()
 
 def updateItem():
@@ -611,7 +617,7 @@ def updateItem():
             else:
                 tkinter.messagebox.showinfo("Information","0 in stock", parent = upStock)
         except :
-            tkinter.messagebox.showerror("showerror","Ops! Something went wrong", parent= upStock)
+            tkinter.messagebox.showerror("showerror","Ops! Something went wrong8", parent= upStock)
 
     def update(ddl_C,ddl_M):
         C = ddl_C_e.get()
@@ -640,7 +646,7 @@ def updateItem():
             tkinter.messagebox.showinfo("Information","Successfully Updated", parent=upStock)
             clear_all()
         except :
-            tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent=upStock)
+            tkinter.messagebox.showerror("showerror","Ops! Something went wrong99!", parent=upStock)
 
 
 
@@ -684,7 +690,7 @@ def updateItem():
         ddl_M_e.place(x=300,y=150)
         ddl_M_e.set("Choose Medicine")
     except :
-        tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent= upStock)
+        tkinter.messagebox.showerror("showerror","Ops! Something went wrong9!", parent= upStock)
 
     btn_search = Button(upStock, text="search", font="times 12 bold", bg="darkcyan", fg="black", command = lambda:search(ddl_C_e,ddl_M_e))
     btn_search.place(x =550, y = 150)
@@ -722,6 +728,8 @@ def updateItem():
     btn_add.place(x=450, y= 500)
     btn_clear = Button(upStock, text="Clear", width =15, font="times 8 bold", bg="darkcyan", fg="black", command= clear_all)
     btn_clear.place(x=320, y= 500)
+
+    upStock.bind("<Return>", lambda *args, ddl_C_e =ddl_C_e, ddl_M_e=ddl_M_e : update(ddl_C_e,ddl_M_e))
 
     upStock.mainloop()
 
@@ -764,7 +772,7 @@ def delete_stock():
             else:
                 tkinter.messagebox.showinfo("showinfo","0 in stock!", parent= delStock)
         except :
-            tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent= delStock)
+            tkinter.messagebox.showerror("showerror","Ops! Something went wrong10!", parent= delStock)
 
     try:
         c.execute("SELECT company_name FROM company_table ORDER BY company_name")
@@ -794,15 +802,13 @@ def delete_stock():
         ddl_M_e.place(x=100,y=100)
         ddl_M_e.set("Choose Medicine")
     except :
-        tkinter.messagebox.showerror("showerror","Ops! Something went wrong!", parent= delStock)
+        tkinter.messagebox.showerror("showerror","Ops! Something went wrong11!", parent= delStock)
     btn_delete = Button(delStock, text="Delete", bg="orange" ,fg="black", font="times 12 bold", command= lambda : delete(ddl_C_e, ddl_M_e))
     btn_delete.place(x= 270, y= 130)
+    delStock.bind("<Return>", lambda *args, ddl_C_e=ddl_C_e, ddl_M_e= ddl_M_e: delete(ddl_C_e,ddl_M_e) )
     delStock.mainloop()
 
 
-def goToShop():
-    from main import main_shop
-    main_shop()
 def check_if_number(text):
     try:
         int(text)
@@ -815,5 +821,3 @@ def check_if_float(text):
         return 1
     except ValueError:
         return 0
-
-adminArea()
