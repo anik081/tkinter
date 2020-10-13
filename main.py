@@ -105,7 +105,7 @@ def main_shop(userName):
                 i=i+1
             f.write("\n\n\tTotal: Tk. "+str(sum(products_price)))
             f.write("\n\n\tThank you")
-            # os.startfile(fileName,"print")
+            #os.startfile(fileName,"print")
             f.close()
 
 
